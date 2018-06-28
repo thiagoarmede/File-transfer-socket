@@ -17,8 +17,7 @@ char message[BUFFER_SIZE];
 struct sockaddr_in remote_address;
 
 WSADATA wsa_data;
-    
-    /* Exibe uma mensagem de erro e termina o programa */
+
 void msg_err_exit(char *msg)
 {
     fprintf(stderr, msg);
@@ -82,7 +81,7 @@ int main(int argc, char **argv)
     while(strcmp(message, EXIT_CALL_STRING));
 
     printf("encerrando\n");
-    
+
     WSACleanup();
     closesocket(remote_socket);
 

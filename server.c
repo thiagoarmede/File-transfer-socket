@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <winsock.h>
-       
 #define BACKLOG_MAX 5
 #define BUFFER_SIZE 128
 #define EXIT_CALL_STRING "#quit"
+#define LOCAL_PORT 6000
     
 int local_socket = 0;
 int remote_socket = 0;
@@ -16,19 +16,41 @@ int message_length = 0;
 unsigned short local_port = 0;
 unsigned short remote_port = 0;
 
-char message[BUFFER_SIZE];
+char fileName[BUFFER_SIZE];
 
 struct sockaddr_in local_address;
 struct sockaddr_in remote_address;
 
 WSADATA wsa_data;
-    
+
+typedef struct {
+    int clientIp;
+    int serverIp;
+    char type;
+    short int sequenceNumber;
+    int fileSize;
+    char datablock[1024];
+    short int padding;
+}PositiveAnswer;
+
+typedef struct
+{
+    int clientIp;
+    int serverIp;
+    char type;
+    int nextIp;
+}NegativeAnswer;
+
 /* Exibe uma mensagem de erro e termina o programa */
 void msg_err_exit(char *msg)
 {
     fprintf(stderr, msg);
     system("PAUSE");
     exit(EXIT_FAILURE);
+}
+
+void sendFile(char *fileName) {
+    
 }
 
 int main(int argc, char **argv)
@@ -45,23 +67,12 @@ int main(int argc, char **argv)
         msg_err_exit("socket() failed\n");
     }
 
-    printf("Porta local: ");
-    scanf("%d", &local_port);
-    fflush(stdin);
-
-    // zera a estrutura local_address
     memset(&local_address, 0, sizeof(local_address));
 
-    // internet address family
     local_address.sin_family = AF_INET;
-
-    // porta local
-    local_address.sin_port = htons(local_port);
-
-    // endereco
+    local_address.sin_port = htons(LOCAL_PORT);
     local_address.sin_addr.s_addr = htonl(INADDR_ANY); // inet_addr("127.0.0.1")
 
-    // interligando o socket com o endereço (local)
     if (bind(local_socket, (struct sockaddr *) &local_address, sizeof(local_address)) == SOCKET_ERROR)
     {
         WSACleanup();
@@ -69,7 +80,6 @@ int main(int argc, char **argv)
         msg_err_exit("bind() failed\n");
     }
 
-    // coloca o socket para escutar as conexoes
     if (listen(local_socket, BACKLOG_MAX) == SOCKET_ERROR)
     {
         WSACleanup();
@@ -81,6 +91,7 @@ int main(int argc, char **argv)
 
     printf("aguardando alguma conexao...\n");
     remote_socket = accept(local_socket, (struct sockaddr *) &remote_address, &remote_length);
+
     if(remote_socket == INVALID_SOCKET)
     {
         WSACleanup();
@@ -88,24 +99,45 @@ int main(int argc, char **argv)
         msg_err_exit("accept() failed\n");
     }
 
-    printf("conexao estabelecida com %s\n", inet_ntoa(remote_address.sin_addr));
-    printf("aguardando mensagens...\n");
+    printf("Conexao estabelecida com %s\n", inet_ntoa(remote_address.sin_addr));
+    printf("aguardando busca de arquivo...\n");
+    
     do
-    {
-        // limpa o buffer
-        memset(&message, 0, BUFFER_SIZE);
-
-        // recebe a mensagem do cliente
-        message_length = recv(remote_socket, message, BUFFER_SIZE, 0);
+    {  
+        memset(&fileName, 0, BUFFER_SIZE);
+        // recebe o ip do cliente
+        message_length = recv(remote_socket, fileName, BUFFER_SIZE, 0);
         if(message_length == SOCKET_ERROR)
-            msg_err_exit("recv() failed\n");
+            msg_err_exit("Falha no recebimento de nome do arquivo.\n");
+        else {
+            printf("%s buscou: %s\n", inet_ntoa(remote_address.sin_addr), fileName);
+            printf("consultando cache de arquivos...\n");
 
-        // exibe a mensagem na tela
-        printf("%s: %s\n", inet_ntoa(remote_address.sin_addr), message);
+            FILE *fd = fopen("cache.txt", "r+");
+            char *foundFileText;
+
+            if(fd == NULL) {
+                printf("Erro ao abrir arquivo.");
+                exit(1);
+            }
+
+            while(!feof(fd)) {
+                fgets(foundFileText, strlen(fileName), fd);
+
+                if(!strcmp(fileName, foundFileText)) {
+                    printf("Arquivo presente na STA, iniciando processo de envio...");
+                    break;
+                }
+
+            }
+           
+        }
     }
-    while(strcmp(message, EXIT_CALL_STRING)); // sai quando receber um "#quit" do cliente
+    while(strcmp(fileName, EXIT_CALL_STRING)); 
+    // sai quando receber um "#quit" do cliente
  
-    printf("encerrando\n");
+    printf("Encerrando aplicacao\n");
+
     WSACleanup();
     closesocket(local_socket);
     closesocket(remote_socket);

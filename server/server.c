@@ -4,7 +4,8 @@
 #include <Winsock2.h>
 #include "../types.h"
 #include <unistd.h>
-    
+#include <ctype.h>
+
 int local_socket = 0;
 int remote_socket = 0;
 
@@ -93,7 +94,7 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
                 posAnswer->padding = 0;
             }
 
-            printf("Enviando bloco... \n");
+            printf("Enviando bloco... %i\n", i);
             fread(posAnswer->dataBlock, sizeof(char), readableSize, file);
             posAnswer->clientIp = inet_addr(inet_ntoa(remote_address.sin_addr));
             posAnswer->serverIp = inet_addr(inet_ntoa(local_address.sin_addr));

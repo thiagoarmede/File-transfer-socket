@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <Winsock2.h>
-#include "../types.h"        
+#include "../types.h"
+#include <ctype.h>
 
 int remote_server_socket = 0;
 int client_message_length = 0;
@@ -25,6 +26,20 @@ void MenuCliente(){
 
 }
 
+char *trimwhitespace(char *str)
+{
+    char *end;
+    while (isspace((unsigned char)*str))
+        str++;
+    if (*str == 0) // All spaces?
+        return str;
+    end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end))
+        end--;
+    end[1] = '\0';
+    return str;
+}
+
 void msg_err_client_exit(char *msg)
 {
     fprintf(stderr, msg);
@@ -40,9 +55,13 @@ void waitForRequisition(char *fileName) {
 
         PositiveAnswer *resp = malloc(sizeof(PositiveAnswer));
         memcpy(resp, buffer, sizeof(PositiveAnswer));
-        printf("Tipo da resposta %c", resp->type);
+        printf("Tipo da resposta %c\n", resp->type);
         if(resp->type == '2') {
-            FILE *fp = fopen(fileName, "ab+");
+            printf("Nome do arquivo %s", fileName);
+            FILE *fp = fopen(trimwhitespace(fileName), "ab+");
+            if(!fp) {
+                printf("Arquivo nao aberto...\n");
+            }
             fwrite(resp->dataBlock, 1024 - resp->padding, 1, fp);
             fclose(fp);
             break;

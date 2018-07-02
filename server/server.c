@@ -2,9 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <winsock.h>
-#define BACKLOG_MAX 5
-#define EXIT_CALL_STRING "#quit"
-#define LOCAL_PORT 6000
+#include "../types.h"
     
 int local_socket = 0;
 int remote_socket = 0;
@@ -18,41 +16,18 @@ struct sockaddr_in next_address;
 
 WSADATA wsa_data;
 
-typedef struct {
-    int clientIp;
-    int serverIp;
-    char type;
-    short int sequenceNumber;
-    int fileSize;
-    char datablock[1024];
-    short int padding;
-}PositiveAnswer;
-
-typedef struct
-{
-    int clientIp;
-    int serverIp;
-    char type;
-    int nextIp;
-}NegativeAnswer;
-
-typedef struct {
-    int serverIp;
-    int clientIp;
-    char type;
-    char lifeTime;
-    char fileName[20];
-}RequisitionBlock;
-
 RequisitionBlock *reqBlock;
 
 #define REQUISITION_BUFFER_SIZE sizeof(RequisitionBlock);
 
-/* Exibe uma mensagem de erro e termina o programa */
 void msg_err_exit(char *msg) {
     fprintf(stderr, msg);
     system("PAUSE");
     exit(EXIT_FAILURE);
+}
+
+int getNextIp() {
+    
 }
 
 int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
@@ -69,6 +44,7 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
         negAnswer->clientIp = inet_addr(inet_ntoa(remote_address.sin_addr));
         negAnswer->serverIp = inet_addr(inet_ntoa(local_address.sin_addr));
         negAnswer->type = '3';
+
         negAnswer->nextIp = inet_addr(inet_ntoa(next_address.sin_addr));
 
         send(socket, (char *)negAnswer, sizeof(NegativeAnswer), 0);
@@ -82,6 +58,10 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
         fseek(file, 0, SEEK_SET);
 
         int blocks = remainingSize/1024;
+        if(remainingSize%1024) {
+            blocks++;
+        }
+
         posAnswer->fileSize = remainingSize;
 
         for(int i=0; i < blocks; i++) {
@@ -96,7 +76,7 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
             }
 
             printf("Enviando bloco... \n");
-            fread(posAnswer->datablock, sizeof(char), readableSize, file);
+            fread(posAnswer->dataBlock, sizeof(char), readableSize, file);
             posAnswer->clientIp = inet_addr(inet_ntoa(remote_address.sin_addr));
             posAnswer->serverIp = inet_addr(inet_ntoa(local_address.sin_addr));
             posAnswer->type = '2';
@@ -141,13 +121,11 @@ int Search_in_File(char *fname, char *str){
     return (0);
 }
 
-int main(int argc, char **argv)
+void server()
 {
-    // inicia o Winsock 2.0 (DLL), Only for Windows
     if (WSAStartup(MAKEWORD(2, 0), &wsa_data) != 0)
         msg_err_exit("WSAStartup() failed\n");
 
-    // criando o socket local para o servidor
     local_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (local_socket == INVALID_SOCKET){
         WSACleanup();
@@ -157,8 +135,8 @@ int main(int argc, char **argv)
     memset(&local_address, 0, sizeof(local_address));
 
     local_address.sin_family = AF_INET;
-    local_address.sin_port = htons(LOCAL_PORT);
-    local_address.sin_addr.s_addr = htonl(INADDR_ANY); // inet_addr("127.0.0.1")
+    local_address.sin_port = htons(SERVER_PORT);
+    local_address.sin_addr.s_addr = htonl(INADDR_ANY); 
 
     if (bind(local_socket, (struct sockaddr *) &local_address, sizeof(local_address)) == SOCKET_ERROR){
         WSACleanup();
@@ -189,23 +167,28 @@ int main(int argc, char **argv)
     do{  
         memset(reqBlock, 0, sizeof(RequisitionBlock));
         // recebe o ip do cliente
-        message_length = recv(remote_socket, (char *)reqBlock, sizeof(RequisitionBlock), 0);
-        if(message_length == SOCKET_ERROR)
-            msg_err_exit("Falha no recebimento de nome do arquivo.\n");
-        else {
-            printf("%s buscou: %s\n", inet_ntoa(remote_address.sin_addr), reqBlock->fileName);
-            printf("consultando cache de arquivos...\n");
+        printf("entrou aqui\n");
+        message_length = recv(remote_socket, (char *)reqBlock, sizeof(reqBlock), 0);
+        printf("entrou aqui 2");
+        if(message_length == SOCKET_ERROR) {
+            printf("erro no socket.");
+            printf("%i", remote_socket);
+            // msg_err_exit("Falha no recebimento de nome do arquivo.\n");
+            continue;
+        }      
+        printf("%s buscou: %s\n", inet_ntoa(remote_address.sin_addr), reqBlock->fileName);
+        printf("consultando cache de arquivos...\n");
 
-            int hasFoundWord;
-            char *fileEntireText;
+        int hasFoundWord;
+        char *fileEntireText;
 
-            hasFoundWord = Search_in_File("cache.txt", reqBlock->fileName);
-            
-            if(hasFoundWord) {
-                sendFile(reqBlock, local_socket);
-            }     
-        }
-    }while(strcmp(reqBlock->fileName, EXIT_CALL_STRING)); 
+        hasFoundWord = Search_in_File("cache.txt", reqBlock->fileName);
+        
+        if(hasFoundWord) {
+            sendFile(reqBlock, local_socket);
+        }     
+    
+    }while(!strstr(reqBlock->fileName, EXIT_STRING)); 
  
     printf("Encerrando aplicacao\n");
 
@@ -214,6 +197,5 @@ int main(int argc, char **argv)
     closesocket(remote_socket);
  
     system("PAUSE");
-    return 0;
-    
+    return;
 }

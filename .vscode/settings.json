@@ -2,6 +2,8 @@
     "files.associations": {
         "stdlib.h": "c",
         "stdio.h": "c",
-        "winsock.h": "c"
+        "winsock.h": "c",
+        "types.h": "c",
+        "types.h\u0000types.h": "c"
     }
 }

@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <winsock.h>
+#include <Winsock2.h>
 #include "../types.h"
+#include <unistd.h>
     
 int local_socket = 0;
 int remote_socket = 0;
@@ -123,7 +124,7 @@ int Search_in_File(char *fname, char *str){
 
 void server()
 {
-    if (WSAStartup(MAKEWORD(2, 0), &wsa_data) != 0)
+    if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0)
         msg_err_exit("WSAStartup() failed\n");
 
     local_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -154,7 +155,6 @@ void server()
 
     printf("aguardando alguma conexao...\n");
     remote_socket = accept(local_socket, (struct sockaddr *) &remote_address, &remote_length);
-    printf("teste...\n");
 
     if(remote_socket == INVALID_SOCKET){
         WSACleanup();
@@ -165,29 +165,40 @@ void server()
     printf("Conexao estabelecida com %s\n", inet_ntoa(remote_address.sin_addr));
     printf("aguardando busca de arquivo...\n");
     
-    do{  
-        // memset(reqBlock, 0, sizeof(RequisitionBlock));
+    do{ 
+        unsigned char buffer[32];
         // recebe o ip do cliente
-        printf("entrou aqui\n");
-        printf("entrou aqui 2");
-        char *buffer;
-
-        while (recv(remote_socket, buffer, sizeof(reqBlock), 0) == SOCKET_ERROR);
+        message_length = recv(remote_socket, buffer, sizeof(RequisitionBlock), 0) == SOCKET_ERROR;
+        if(message_length){
+            printf("erro.. %i\n", WSAGetLastError());
+        }
+        printf("%s", buffer);
+        // reqBlock = malloc(sizeof(RequisitionBlock));
+        reqBlock = malloc(sizeof(RequisitionBlock));
+        memcpy(reqBlock, buffer, sizeof(RequisitionBlock));
+        
+        // {
+        //     printf("Erro: %i\n", WSAGetLastError());
+        //     printf("erro no socket.");
+        //     continue;
+        // }
 
             // if(message_length == SOCKET_ERROR) {
-            //     printf("erro no socket.");
             //     printf("%i", remote_socket);
             //     // msg_err_exit("Falha no recebimento de nome do arquivo.\n");
             //     continue;
             // }
-        printf("%s buscou: %s\n", inet_ntoa(remote_address.sin_addr), reqBlock->fileName);
+        printf("%i %s %c", reqBlock->clientIp, reqBlock->fileName, reqBlock->type);
+
+        printf("\n%s buscou: %s\n", inet_ntoa(remote_address.sin_addr), reqBlock->fileName);
         printf("consultando cache de arquivos...\n");
 
         int hasFoundWord;
         char *fileEntireText;
 
         hasFoundWord = Search_in_File("cache.txt", reqBlock->fileName);
-        
+        printf("Encontrou palavra: %i\n", hasFoundWord);
+
         if(hasFoundWord) {
             sendFile(reqBlock, local_socket);
         }     

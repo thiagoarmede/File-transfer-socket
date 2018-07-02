@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <winsock.h>
+#include <Winsock2.h>
 #include "../types.h"        
 
 int remote_server_socket = 0;
@@ -45,7 +45,7 @@ void searchFile() {
 
         fflush(stdin);
         // envia a mensagem para o servidor
-        if (send(remote_server_socket, (char *)reqBlock, sizeof(reqBlock), 0) == SOCKET_ERROR){
+        if (send(remote_server_socket, (char *)reqBlock, sizeof(*reqBlock), 0) == SOCKET_ERROR){
             WSACleanup();
             closesocket(remote_server_socket);
             msg_err_client_exit("Falha ao enviar.\n");

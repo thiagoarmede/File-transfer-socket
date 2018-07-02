@@ -28,7 +28,7 @@ void msg_err_exit(char *msg) {
 }
 
 int getNextIp(char *nextIp) {
-    FILE *fp = fopen("nextIp.txt", "r");
+    FILE *fp = fopen("nextip.txt", "r");
     if(!fp) {
         return 0;
     }
@@ -41,12 +41,7 @@ int getNextIp(char *nextIp) {
 }
 
 int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
-    puts("iniciou envio");
-    char fileDir[25] = "../";
-    strcat(fileDir, fileRequisition->fileName);
-    puts("concatenou");
-    FILE *file = fopen(fileDir, "r");
-    puts("iniciou envio 2");
+    FILE *file = fopen("teste.txt", "r+");
     if(file == NULL) {
         printf("Erro ao buscar arquivo, enviando mensagem negativa.\n");
         if(fileRequisition->lifeTime == '0') {
@@ -70,11 +65,10 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
 
         memcpy(negBuffer, negAnswer, sizeof(NegativeAnswer));
         send(socket, negBuffer, sizeof(PositiveAnswer), 0);
-        printf("\nErro: %i", WSAGetLastError());
         fclose(file);
         return 0;
     } else {
-        PositiveAnswer *posAnswer;
+        PositiveAnswer *posAnswer = malloc(sizeof(PositiveAnswer));
 
         fseek(file, 0, SEEK_END);
         int remainingSize = ftell(file);
@@ -108,8 +102,6 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
             send(socket, (char *)posAnswer, sizeof(PositiveAnswer), 0);
             remainingSize -= 1024;
         }
-
-        printf("Arquivo completamente enviado!");
         fclose(file);
 
         return 1;

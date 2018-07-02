@@ -41,7 +41,7 @@ void waitForRequisition(char *fileName) {
         PositiveAnswer *resp = malloc(sizeof(PositiveAnswer));
         memcpy(resp, buffer, sizeof(PositiveAnswer));
         if(resp->type == '2') {
-            FILE *fp = fopen(fileName, "w+");
+            FILE *fp = fopen(fileName, "wb+");
             fwrite(resp->dataBlock, 1024, 1, fp);
             fclose(fp);
             break;

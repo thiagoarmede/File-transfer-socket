@@ -48,7 +48,7 @@ void waitForRequisition(char *fileName) {
         } else if (resp->type == '3') {
             NegativeAnswer *negResp = malloc(sizeof(NegativeAnswer));
             memcpy(negResp, resp, sizeof(NegativeAnswer));
-            printf("Arquivo não presente no servidor, IP do proximo: %i\n", negResp->nextIp);
+            printf("Arquivo nao presente no servidor, IP do proximo: %i\n", negResp->nextIp);
             break;
         }
     }while(1);
@@ -75,7 +75,7 @@ void searchFile() {
             closesocket(remote_server_socket);
             msg_err_client_exit("Falha ao enviar.\n");
         } else {
-            printf("Mensagem enviada.");
+            printf("Mensagem enviada.\n");
             waitForRequisition(reqBlock->fileName);
             return;
         }
@@ -112,12 +112,12 @@ void client()
 
         searchFile();
     
-        printf("\nEncerrando modo cliente.\n");
-
         WSACleanup();
         closesocket(remote_server_socket);
 
     }while(1);
+
+    printf("Encerrando modo cliente...\n");
 
     return;
 }

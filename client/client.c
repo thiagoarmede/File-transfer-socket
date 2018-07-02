@@ -37,10 +37,8 @@ void waitForRequisition(char *fileName) {
     do{
         int reqMessage = 0;
         while(recv(remote_server_socket, buffer, sizeof(PositiveAnswer), 0) == SOCKET_ERROR);
-        // if(reqMessage) {
-        //     printf("Erro %i no socket.\n", WSAGetLastError());
-        // } else {
-        PositiveAnswer *resp;
+
+        PositiveAnswer *resp = malloc(sizeof(PositiveAnswer));
         memcpy(resp, buffer, sizeof(PositiveAnswer));
         if(resp->type == '2') {
             FILE *fp = fopen(fileName, "w+");

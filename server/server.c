@@ -54,9 +54,9 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
             fclose(file);
             return 0;
         }
-        NegativeAnswer *negAnswer;
+        NegativeAnswer *negAnswer = malloc(sizeof(NegativeAnswer));
         char nextIp[20];
-        char negBuffer[sizeof(NegativeAnswer)+1];
+        char negBuffer[sizeof(PositiveAnswer)];
 
         negAnswer->clientIp = inet_addr(inet_ntoa(remote_address.sin_addr));
         negAnswer->serverIp = inet_addr(inet_ntoa(local_address.sin_addr));
@@ -64,11 +64,12 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
         if(getNextIp(nextIp)) {
             negAnswer->nextIp = atoi(nextIp);
         } else {
+            printf("converteu nao.\n");
             negAnswer->nextIp = 0;
         }
 
         memcpy(negBuffer, negAnswer, sizeof(NegativeAnswer));
-        send(socket, negBuffer, sizeof(NegativeAnswer), 0);
+        send(socket, negBuffer, sizeof(PositiveAnswer), 0);
         printf("\nErro: %i", WSAGetLastError());
         fclose(file);
         return 0;

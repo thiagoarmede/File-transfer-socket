@@ -3,6 +3,7 @@
 #include <string.h>
 #include <Winsock2.h>
 #include "../types.h"
+#include "../server/server.h"
 #include <ctype.h>
 
 int remote_server_socket = 0;
@@ -49,7 +50,9 @@ void msg_err_client_exit(char *msg)
 
 void waitForRequisition(char *fileName) {
     char buffer[sizeof(PositiveAnswer)];
+    printf("Recebimento da resposta.\n");
     do{
+        memset(buffer, 0, sizeof(PositiveAnswer));
         int reqMessage = 0;
         while(recv(remote_server_socket, buffer, sizeof(PositiveAnswer), 0) == SOCKET_ERROR);
 
@@ -57,13 +60,13 @@ void waitForRequisition(char *fileName) {
         memcpy(resp, buffer, sizeof(PositiveAnswer));
         printf("Tipo da resposta %c\n", resp->type);
         if(resp->type == '2') {
-            printf("Nome do arquivo %s", fileName);
             FILE *fp = fopen(trimwhitespace(fileName), "ab+");
             if(!fp) {
                 printf("Arquivo nao aberto...\n");
             }
             fwrite(resp->dataBlock, 1024 - resp->padding, 1, fp);
             fclose(fp);
+            printf(".");
         } else if (resp->type == '3') {
             NegativeAnswer *negResp = malloc(sizeof(NegativeAnswer));
             memcpy(negResp, resp, sizeof(NegativeAnswer));
@@ -85,6 +88,8 @@ int searchFile() {
         printf("Digite o nome do arquivo a ser buscado: \n");
         fgets(reqBlock->fileName, 19, stdin);
         fflush(stdin);
+
+
         reqBlock->serverIp = inet_addr(inet_ntoa(remote_address.sin_addr));
         reqBlock->clientIp = inet_addr(inet_ntoa(remote_address.sin_addr));
         reqBlock->lifeTime = '4';

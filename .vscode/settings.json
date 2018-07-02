@@ -4,6 +4,8 @@
         "stdio.h": "c",
         "winsock.h": "c",
         "types.h": "c",
-        "types.h\u0000types.h": "c"
+        "types.h\u0000types.h": "c",
+        "server.h": "c",
+        "server.h\u0000erver.h": "c"
     }
 }

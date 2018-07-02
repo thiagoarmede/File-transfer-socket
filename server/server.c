@@ -5,6 +5,7 @@
 #include "../types.h"
 #include <unistd.h>
 #include <ctype.h>
+#include <windows.h>
 
 int local_socket = 0;
 int remote_socket = 0;
@@ -103,6 +104,7 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
 
             send(socket, (char *)posAnswer, sizeof(PositiveAnswer), 0);
             remainingSize -= 1024;
+            Sleep(50);
         }
         fclose(file);
 

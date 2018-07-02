@@ -50,6 +50,7 @@ void searchFile() {
             closesocket(remote_server_socket);
             msg_err_client_exit("Falha ao enviar.\n");
         } else {
+            printf("mensagem enviada");
             return;
         }
     }while(strcmp((char *)reqBlock, EXIT_STRING));

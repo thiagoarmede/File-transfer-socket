@@ -154,6 +154,7 @@ void server()
 
     printf("aguardando alguma conexao...\n");
     remote_socket = accept(local_socket, (struct sockaddr *) &remote_address, &remote_length);
+    printf("teste...\n");
 
     if(remote_socket == INVALID_SOCKET){
         WSACleanup();
@@ -165,17 +166,20 @@ void server()
     printf("aguardando busca de arquivo...\n");
     
     do{  
-        memset(reqBlock, 0, sizeof(RequisitionBlock));
+        // memset(reqBlock, 0, sizeof(RequisitionBlock));
         // recebe o ip do cliente
         printf("entrou aqui\n");
-        message_length = recv(remote_socket, (char *)reqBlock, sizeof(reqBlock), 0);
         printf("entrou aqui 2");
-        if(message_length == SOCKET_ERROR) {
-            printf("erro no socket.");
-            printf("%i", remote_socket);
-            // msg_err_exit("Falha no recebimento de nome do arquivo.\n");
-            continue;
-        }      
+        char *buffer;
+
+        while (recv(remote_socket, buffer, sizeof(reqBlock), 0) == SOCKET_ERROR);
+
+            // if(message_length == SOCKET_ERROR) {
+            //     printf("erro no socket.");
+            //     printf("%i", remote_socket);
+            //     // msg_err_exit("Falha no recebimento de nome do arquivo.\n");
+            //     continue;
+            // }
         printf("%s buscou: %s\n", inet_ntoa(remote_address.sin_addr), reqBlock->fileName);
         printf("consultando cache de arquivos...\n");
 

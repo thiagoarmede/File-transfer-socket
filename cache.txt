@@ -1,2 +1,3 @@
-a.exeteste.txt
+a.exe
+teste.txt
 teste2.txt

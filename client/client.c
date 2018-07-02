@@ -64,7 +64,6 @@ void waitForRequisition(char *fileName) {
             }
             fwrite(resp->dataBlock, 1024 - resp->padding, 1, fp);
             fclose(fp);
-            break;
         } else if (resp->type == '3') {
             NegativeAnswer *negResp = malloc(sizeof(NegativeAnswer));
             memcpy(negResp, resp, sizeof(NegativeAnswer));

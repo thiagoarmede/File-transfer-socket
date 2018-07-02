@@ -81,7 +81,7 @@ int searchFile() {
         } else {
             printf("Mensagem enviada.\n");
             waitForRequisition(reqBlock->fileName);
-            return;
+            return 1;
         }
     }while(strcmp((char *)reqBlock, EXIT_STRING));
 }

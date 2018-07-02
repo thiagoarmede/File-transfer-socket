@@ -208,7 +208,13 @@ void server()
         printf("Encontrou palavra: %i\n", hasFoundWord);
 
         if(hasFoundWord) {
-            sendFile(reqBlock, remote_socket);
+            if (!sendFile(reqBlock, remote_socket)){
+                printf("Arquivo nao enviado, informacoes passadas ao cliente.\n");
+                break;
+            } else {
+                printf("Arquivo enviado ao cliente!\n");
+                break;
+            }
         }else {
             printf("Arquivo não encontrado. \n");
             break;

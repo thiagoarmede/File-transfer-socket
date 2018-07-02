@@ -48,7 +48,11 @@ void waitForRequisition(char *fileName) {
         } else if (resp->type == '3') {
             NegativeAnswer *negResp = malloc(sizeof(NegativeAnswer));
             memcpy(negResp, resp, sizeof(NegativeAnswer));
-            printf("Arquivo nao presente no servidor, IP do proximo: %i\n", negResp->nextIp);
+            if(!negResp->nextIp) {
+                printf("Sem proximo IP registrado no servidor.");
+            }else {
+                printf("Arquivo nao presente no servidor, IP do proximo: %i\n", negResp->nextIp);
+            }
             break;
         }
     }while(1);

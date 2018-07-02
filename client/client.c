@@ -89,6 +89,11 @@ int searchFile() {
         fgets(reqBlock->fileName, 19, stdin);
         fflush(stdin);
 
+        int foundHere = Search_in_File("cache.txt", reqBlock->fileName);
+        if(!foundHere) {
+            printf("Arquivo ja presente na STA. \n");
+            return 1;
+        }
 
         reqBlock->serverIp = inet_addr(inet_ntoa(remote_address.sin_addr));
         reqBlock->clientIp = inet_addr(inet_ntoa(remote_address.sin_addr));

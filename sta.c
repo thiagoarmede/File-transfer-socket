@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <winsock.h>
+#include <Winsock2.h>
 #include "client\client.h"
 #include "server\server.h"
 

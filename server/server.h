@@ -2,7 +2,7 @@
 #define SERVER_HEADER
 #include <stdio.h>
 #include <stdlib.h>
-#include <winsock.h>
+#include <Winsock2.h>
 #include "../types.h"
 
 void server();

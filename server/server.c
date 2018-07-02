@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <winsock.h>
+#include <Winsock2.h>
 #include "../types.h"
     
 int local_socket = 0;
@@ -27,7 +27,7 @@ void msg_err_exit(char *msg) {
 }
 
 int getNextIp() {
-    
+
 }
 
 int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){

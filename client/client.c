@@ -37,7 +37,7 @@ void waitForRequisition(char *fileName) {
     do{
         int reqMessage = recv(remote_server_socket, buffer, sizeof(PositiveAnswer), 0) == SOCKET_ERROR;
         if(reqMessage) {
-            printf("Erro %i\n no socket.", WSAGetLastError());
+            printf("Erro %i no socket.\n", WSAGetLastError());
         } else {
             PositiveAnswer *resp;
             memcpy(resp, buffer, sizeof(PositiveAnswer));
@@ -114,9 +114,7 @@ void client()
         };
 
         searchFile();
-        
-
-
+    
         printf("\nEncerrando modo cliente.\n");
 
         WSACleanup();

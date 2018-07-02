@@ -49,7 +49,7 @@ void waitForRequisition(char *fileName) {
             NegativeAnswer *negResp = malloc(sizeof(NegativeAnswer));
             memcpy(negResp, resp, sizeof(NegativeAnswer));
             if(!negResp->nextIp) {
-                printf("Sem proximo IP registrado no servidor.");
+                printf("Sem proximo IP registrado no servidor.\n");
             }else {
                 printf("Arquivo nao presente no servidor, IP do proximo: %i\n", negResp->nextIp);
             }
@@ -58,7 +58,7 @@ void waitForRequisition(char *fileName) {
     }while(1);
 }
 
-void searchFile() {
+int searchFile() {
     RequisitionBlock *reqBlock;
     do {
         reqBlock = malloc(sizeof(RequisitionBlock));
@@ -92,7 +92,7 @@ void client()
 
         if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0)
             msg_err_client_exit("WSAStartup() failed\n");
-
+        printf("\n///////////////INICIANDO CLIENTE/////////////\n");
         printf("IP do servidor: ");
         scanf("%s", remote_ip);
         fflush(stdin);

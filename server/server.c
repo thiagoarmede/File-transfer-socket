@@ -145,6 +145,7 @@ int Search_in_File(char *fname, char *str){
 
 void server()
 {
+    printf("\n///////////////INICIANDO SERVIDOR/////////////\n");
     if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0)
         msg_err_exit("WSAStartup() failed\n");
 
@@ -174,7 +175,7 @@ void server()
 
     remote_length = sizeof(remote_address);
 
-    printf("aguardando alguma conexao...\n");
+    printf("Aguardando alguma conexao...\n");
     remote_socket = accept(local_socket, (struct sockaddr *) &remote_address, &remote_length);
 
     if(remote_socket == INVALID_SOCKET){

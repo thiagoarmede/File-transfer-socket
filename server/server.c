@@ -27,8 +27,14 @@ void msg_err_exit(char *msg) {
     exit(EXIT_FAILURE);
 }
 
-int getNextIp() {
-
+int getNextIp(char *nextIp) {
+    FILE *fp = fopen("nextIp.txt", "r");
+    fread(nextIp, sizeof(char), 20, fp);
+    fclose(fp);
+    if(!strlen(nextIp)) {
+        return 1;
+    }
+    return 0;
 }
 
 int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
@@ -42,13 +48,21 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
             return 0;
         }
         NegativeAnswer *negAnswer;
+        char nextIp[20];
+        char negBuffer[sizeof(NegativeAnswer)];
+
         negAnswer->clientIp = inet_addr(inet_ntoa(remote_address.sin_addr));
         negAnswer->serverIp = inet_addr(inet_ntoa(local_address.sin_addr));
         negAnswer->type = '3';
+        if(getNextIp(nextIp)) {
+            negAnswer->nextIp = atoi(nextIp);
+        } else {
+            negAnswer->nextIp = 0;
+        }
 
-        negAnswer->nextIp = inet_addr(inet_ntoa(next_address.sin_addr));
-
-        send(socket, (char *)negAnswer, sizeof(NegativeAnswer), 0);
+        memcpy(negBuffer, negAnswer, sizeof(NegativeAnswer));
+        send(socket, negBuffer, sizeof(NegativeAnswer), 0);
+        printf("\nErro: %i", WSAGetLastError());
         fclose(file);
         return 0;
     } else {
@@ -111,15 +125,14 @@ int Search_in_File(char *fname, char *str){
         }
         line_num++;
     }
+    fclose(fp);
 
     if (find_result == 0){
         printf("\nArquivo não presente na STA.\n");
+        return 0;
+    } else {
+        return 1;
     }
-
-    if (fp) {
-        fclose(fp);
-    }
-    return (0);
 }
 
 void server()
@@ -172,36 +185,26 @@ void server()
         if(message_length){
             printf("erro.. %i\n", WSAGetLastError());
         }
-        printf("%s", buffer);
-        // reqBlock = malloc(sizeof(RequisitionBlock));
         reqBlock = malloc(sizeof(RequisitionBlock));
         memcpy(reqBlock, buffer, sizeof(RequisitionBlock));
         
-        // {
-        //     printf("Erro: %i\n", WSAGetLastError());
-        //     printf("erro no socket.");
-        //     continue;
-        // }
-
-            // if(message_length == SOCKET_ERROR) {
-            //     printf("%i", remote_socket);
-            //     // msg_err_exit("Falha no recebimento de nome do arquivo.\n");
-            //     continue;
-            // }
-        printf("%i %s %c", reqBlock->clientIp, reqBlock->fileName, reqBlock->type);
-
         printf("\n%s buscou: %s\n", inet_ntoa(remote_address.sin_addr), reqBlock->fileName);
         printf("consultando cache de arquivos...\n");
 
         int hasFoundWord;
         char *fileEntireText;
+    
+        printf("Nome do arquivo %s\n", reqBlock->fileName);    
 
         hasFoundWord = Search_in_File("cache.txt", reqBlock->fileName);
         printf("Encontrou palavra: %i\n", hasFoundWord);
 
         if(hasFoundWord) {
             sendFile(reqBlock, local_socket);
-        }     
+        }else {
+            printf("Arquivo não encontrado. \n");
+            break;
+        }  
     
     }while(!strstr(reqBlock->fileName, EXIT_STRING)); 
  

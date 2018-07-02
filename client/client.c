@@ -32,6 +32,31 @@ void msg_err_client_exit(char *msg)
     exit(EXIT_FAILURE);
 }
 
+void waitForRequisition(char *fileName) {
+    char buffer[sizeof(PositiveAnswer)];
+    do{
+        int reqMessage = recv(remote_server_socket, buffer, sizeof(PositiveAnswer), 0) == SOCKET_ERROR;
+        if(reqMessage) {
+            printf("Erro %i\n no socket.", WSAGetLastError());
+        } else {
+            PositiveAnswer *resp;
+            memcpy(resp, buffer, sizeof(PositiveAnswer));
+            if(resp->type == '2') {
+                FILE *fp = fopen(fileName, "w+");
+                fwrite(resp->dataBlock, 1024, 1, fp);
+                fclose(fp);
+                break;
+            } else if (resp->type == '3') {
+                NegativeAnswer *negResp;
+                memcpy(negResp, resp, sizeof(NegativeAnswer));
+                printf("Arquivo não presente no servidor, IP do proximo: %i\n", negResp->nextIp);
+                break;
+            }
+
+        }
+    }while(1);
+}
+
 void searchFile() {
     RequisitionBlock *reqBlock;
     do {
@@ -45,13 +70,10 @@ void searchFile() {
         reqBlock->type = '1';
         unsigned char buffer[32];
         memcpy(buffer, reqBlock, sizeof(RequisitionBlock));
-        printf("%i %i %c", reqBlock->serverIp, reqBlock->clientIp, reqBlock->lifeTime);
-        printf("\n%s\n", buffer);
-
 
         fflush(stdin);
         // envia a mensagem para o servidor
-        if (send(remote_server_socket, (char *)reqBlock, sizeof(*reqBlock), 0) == SOCKET_ERROR){
+        if (send(remote_server_socket, buffer, sizeof(RequisitionBlock), 0) == SOCKET_ERROR){
             WSACleanup();
             closesocket(remote_server_socket);
             msg_err_client_exit("Falha ao enviar.\n");
@@ -91,6 +113,8 @@ void client()
         };
 
         searchFile();
+        
+
 
         printf("\nEncerrando modo cliente.\n");
 

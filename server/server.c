@@ -29,6 +29,9 @@ void msg_err_exit(char *msg) {
 
 int getNextIp(char *nextIp) {
     FILE *fp = fopen("nextIp.txt", "r");
+    if(!fp) {
+        return 0;
+    }
     fread(nextIp, sizeof(char), 20, fp);
     fclose(fp);
     if(!strlen(nextIp)) {
@@ -38,10 +41,12 @@ int getNextIp(char *nextIp) {
 }
 
 int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
-    char *fileDir = "../";
+    puts("iniciou envio");
+    char fileDir[25] = "../";
     strcat(fileDir, fileRequisition->fileName);
+    puts("concatenou");
     FILE *file = fopen(fileDir, "r");
-
+    puts("iniciou envio 2");
     if(file == NULL) {
         printf("Erro ao buscar arquivo, enviando mensagem negativa.\n");
         if(fileRequisition->lifeTime == '0') {
@@ -51,7 +56,7 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
         }
         NegativeAnswer *negAnswer;
         char nextIp[20];
-        char negBuffer[sizeof(NegativeAnswer)];
+        char negBuffer[sizeof(NegativeAnswer)+1];
 
         negAnswer->clientIp = inet_addr(inet_ntoa(remote_address.sin_addr));
         negAnswer->serverIp = inet_addr(inet_ntoa(local_address.sin_addr));

@@ -35,25 +35,26 @@ void msg_err_client_exit(char *msg)
 void waitForRequisition(char *fileName) {
     char buffer[sizeof(PositiveAnswer)];
     do{
-        int reqMessage = recv(remote_server_socket, buffer, sizeof(PositiveAnswer), 0) == SOCKET_ERROR;
-        if(reqMessage) {
-            printf("Erro %i no socket.\n", WSAGetLastError());
-        } else {
-            PositiveAnswer *resp;
-            memcpy(resp, buffer, sizeof(PositiveAnswer));
-            if(resp->type == '2') {
-                FILE *fp = fopen(fileName, "w+");
-                fwrite(resp->dataBlock, 1024, 1, fp);
-                fclose(fp);
-                break;
-            } else if (resp->type == '3') {
-                NegativeAnswer *negResp;
-                memcpy(negResp, resp, sizeof(NegativeAnswer));
-                printf("Arquivo não presente no servidor, IP do proximo: %i\n", negResp->nextIp);
-                break;
-            }
-
+        int reqMessage = 0;
+        while(recv(remote_server_socket, buffer, sizeof(PositiveAnswer), 0) == SOCKET_ERROR);
+        // if(reqMessage) {
+        //     printf("Erro %i no socket.\n", WSAGetLastError());
+        // } else {
+        PositiveAnswer *resp;
+        memcpy(resp, buffer, sizeof(PositiveAnswer));
+        if(resp->type == '2') {
+            FILE *fp = fopen(fileName, "w+");
+            fwrite(resp->dataBlock, 1024, 1, fp);
+            fclose(fp);
+            break;
+        } else if (resp->type == '3') {
+            NegativeAnswer *negResp;
+            memcpy(negResp, resp, sizeof(NegativeAnswer));
+            printf("Arquivo não presente no servidor, IP do proximo: %i\n", negResp->nextIp);
+            break;
         }
+
+        // }
     }while(1);
 }
 

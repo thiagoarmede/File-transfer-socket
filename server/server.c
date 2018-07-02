@@ -28,7 +28,7 @@ void msg_err_exit(char *msg) {
 }
 
 int getNextIp() {
-    
+
 }
 
 int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){

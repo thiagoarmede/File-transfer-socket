@@ -35,13 +35,19 @@ void msg_err_client_exit(char *msg)
 void searchFile() {
     RequisitionBlock *reqBlock;
     do {
-        memset(reqBlock, 0, sizeof(reqBlock));
+        reqBlock = malloc(sizeof(RequisitionBlock));
+        memset(reqBlock, 0, sizeof(*reqBlock));
         printf("Digite o nome do arquivo a ser buscado: \n");
         fgets(reqBlock->fileName, 19, stdin);
         reqBlock->serverIp = inet_addr(inet_ntoa(remote_address.sin_addr));
         reqBlock->clientIp = inet_addr(inet_ntoa(remote_address.sin_addr));
         reqBlock->lifeTime = '4';
         reqBlock->type = '1';
+        unsigned char buffer[32];
+        memcpy(buffer, reqBlock, sizeof(RequisitionBlock));
+        printf("%i %i %c", reqBlock->serverIp, reqBlock->clientIp, reqBlock->lifeTime);
+        printf("\n%s\n", buffer);
+
 
         fflush(stdin);
         // envia a mensagem para o servidor
@@ -50,7 +56,7 @@ void searchFile() {
             closesocket(remote_server_socket);
             msg_err_client_exit("Falha ao enviar.\n");
         } else {
-            printf("mensagem enviada");
+            printf("Mensagem enviada.");
             return;
         }
     }while(strcmp((char *)reqBlock, EXIT_STRING));
@@ -60,8 +66,7 @@ void client()
 {    
     do {
 
-
-        if (WSAStartup(MAKEWORD(2, 0), &wsa_data) != 0)
+        if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0)
             msg_err_client_exit("WSAStartup() failed\n");
 
         printf("IP do servidor: ");

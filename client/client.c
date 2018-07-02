@@ -79,6 +79,7 @@ void searchFile() {
             msg_err_client_exit("Falha ao enviar.\n");
         } else {
             printf("Mensagem enviada.");
+            waitForRequisition(reqBlock->fileName);
             return;
         }
     }while(strcmp((char *)reqBlock, EXIT_STRING));

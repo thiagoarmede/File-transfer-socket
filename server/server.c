@@ -41,7 +41,8 @@ int getNextIp(char *nextIp) {
 }
 
 int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
-    FILE *file = fopen("teste.txt", "r+");
+    printf("NOME RECEBIDO %s", fileRequisition->fileName);
+    FILE *file = fopen("b.exe", "rb+");
     if(file == NULL) {
         printf("Erro ao buscar arquivo, enviando mensagem negativa.\n");
         if(fileRequisition->lifeTime == '0') {
@@ -195,10 +196,7 @@ void server()
         int hasFoundWord;
         char *fileEntireText;
     
-        printf("Nome do arquivo %s\n", reqBlock->fileName);    
-
         hasFoundWord = Search_in_File("cache.txt", reqBlock->fileName);
-        printf("Encontrou palavra: %i\n", hasFoundWord);
 
         if(hasFoundWord) {
             if (!sendFile(reqBlock, remote_socket)){

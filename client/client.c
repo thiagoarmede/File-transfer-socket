@@ -40,9 +40,10 @@ void waitForRequisition(char *fileName) {
 
         PositiveAnswer *resp = malloc(sizeof(PositiveAnswer));
         memcpy(resp, buffer, sizeof(PositiveAnswer));
+        printf("Tipo da resposta %c", resp->type);
         if(resp->type == '2') {
-            FILE *fp = fopen(fileName, "wb+");
-            fwrite(resp->dataBlock, 1024, 1, fp);
+            FILE *fp = fopen(fileName, "ab+");
+            fwrite(resp->dataBlock, 1024 - resp->padding, 1, fp);
             fclose(fp);
             break;
         } else if (resp->type == '3') {
@@ -65,6 +66,7 @@ int searchFile() {
         memset(reqBlock, 0, sizeof(*reqBlock));
         printf("Digite o nome do arquivo a ser buscado: \n");
         fgets(reqBlock->fileName, 19, stdin);
+        fflush(stdin);
         reqBlock->serverIp = inet_addr(inet_ntoa(remote_address.sin_addr));
         reqBlock->clientIp = inet_addr(inet_ntoa(remote_address.sin_addr));
         reqBlock->lifeTime = '4';
@@ -72,7 +74,6 @@ int searchFile() {
         unsigned char buffer[32];
         memcpy(buffer, reqBlock, sizeof(RequisitionBlock));
 
-        fflush(stdin);
         // envia a mensagem para o servidor
         if (send(remote_server_socket, buffer, sizeof(RequisitionBlock), 0) == SOCKET_ERROR){
             WSACleanup();

@@ -46,13 +46,11 @@ void waitForRequisition(char *fileName) {
             fclose(fp);
             break;
         } else if (resp->type == '3') {
-            NegativeAnswer *negResp;
+            NegativeAnswer *negResp = malloc(sizeof(NegativeAnswer));
             memcpy(negResp, resp, sizeof(NegativeAnswer));
             printf("Arquivo não presente no servidor, IP do proximo: %i\n", negResp->nextIp);
             break;
         }
-
-        // }
     }while(1);
 }
 

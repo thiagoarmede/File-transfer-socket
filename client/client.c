@@ -132,7 +132,7 @@ void client()
         if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0)
             msg_err_client_exit("WSAStartup() failed\n");
         printf("\n///////////////INICIANDO CLIENTE/////////////\n");
-        printf("IP do servidor: ");
+        printf("Digite um IP de servidor: ");
         scanf("%s", remote_ip);
         fflush(stdin);
         if(strstr(remote_ip, "sair")){
@@ -164,6 +164,5 @@ void client()
     }while(1);
 
     printf("Encerrando modo cliente...\n");
-
     return;
 }

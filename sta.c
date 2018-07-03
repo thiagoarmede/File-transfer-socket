@@ -19,16 +19,6 @@ void menu(){
     printf("-------------------------------------------------------------------------------\n");
 }
 
-void addToCache(char *cache, char *s){
-    FILE *f;
-    f = fopen(cache, "a");
-    if(f != NULL){
-        fprintf(f, "%s", s);
-        printf("Arquivo adicionado ao cache!\n");    
-    }
-    else printf("Erro ao abrir cache.\n");
-    fclose(f);
-}
 
 void addToNextIp(char *nextIp) {
     FILE *f = fopen("nextip.txt", "w");

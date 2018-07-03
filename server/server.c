@@ -44,6 +44,20 @@ int getNextIp(char *nextIp) {
     return 0;
 }
 
+void addToCache(char *cache, char *s)
+{
+    FILE *f;
+    f = fopen(cache, "a");
+    if (f != NULL)
+    {
+        fprintf(f, "%s", s);
+        printf("Arquivo adicionado ao cache!\n");
+    }
+    else
+        printf("Erro ao abrir cache.\n");
+    fclose(f);
+}
+
 int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
     FILE *file = fopen(trimwhitespace(fileRequisition->fileName), "rb+");
     if(file == NULL) {
@@ -209,6 +223,8 @@ void server()
         } else {
             sendFile(reqBlock, remote_socket);
             printf("Arquivo enviado ao cliente!\n");
+            addToCache("cache.txt", trimwhitespace(reqBlock->fileName));
+            printf("Arquivo adicionado ao cache!\n");
             break;
         }    
     }while(!strstr(reqBlock->fileName, EXIT_STRING)); 

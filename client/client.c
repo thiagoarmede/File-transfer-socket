@@ -96,7 +96,7 @@ int searchFile() {
         int foundHere = Search_in_File("cache.txt", reqBlock->fileName);
         if(!foundHere) {
             printf("Arquivo ja presente na STA. \n");
-            return 1;
+            return 0;
         }
 
         reqBlock->serverIp = inet_addr(inet_ntoa(remote_address.sin_addr));

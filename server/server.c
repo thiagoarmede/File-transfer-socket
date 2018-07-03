@@ -223,8 +223,6 @@ void server()
         } else {
             sendFile(reqBlock, remote_socket);
             printf("Arquivo enviado ao cliente!\n");
-            addToCache("cache.txt", trimwhitespace(reqBlock->fileName));
-            printf("Arquivo adicionado ao cache!\n");
             break;
         }    
     }while(!strstr(reqBlock->fileName, EXIT_STRING)); 

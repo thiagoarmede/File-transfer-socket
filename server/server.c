@@ -115,7 +115,7 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
             posAnswer->clientIp = inet_addr(inet_ntoa(remote_address.sin_addr));
             posAnswer->serverIp = inet_addr(inet_ntoa(local_address.sin_addr));
             posAnswer->type = '2';
-            posAnswer->sequenceNumber = i+1;
+            posAnswer->sequenceNumber = i;
 
             send(socket, (char *)posAnswer, sizeof(PositiveAnswer), 0);
             remainingSize -= 1024;

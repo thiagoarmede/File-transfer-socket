@@ -51,8 +51,10 @@ void msg_err_client_exit(char *msg)
     exit(EXIT_FAILURE);
 }
 
-void waitForRequisition(char *fileName) {
+int waitForRequisition(char *fileName) {
     char buffer[sizeof(PositiveAnswer)];
+    int blocks;
+    int counter = 0;
     printf("Recebimento da resposta.\n");
     do{
         memset(buffer, 0, sizeof(PositiveAnswer));
@@ -61,14 +63,27 @@ void waitForRequisition(char *fileName) {
 
         PositiveAnswer *resp = malloc(sizeof(PositiveAnswer));
         memcpy(resp, buffer, sizeof(PositiveAnswer));
+        
         if(resp->type == '2') {
             FILE *fp = fopen(trimwhitespace(fileName), "ab+");
             if(!fp) {
                 printf("Arquivo nao aberto...\n");
             }
+            if(counter == 0){
+                blocks = resp->fileSize/1024;
+                if(resp->fileSize%1024){
+                    blocks++;
+                }
+            }
+
             fwrite(resp->dataBlock, 1024 - resp->padding, 1, fp);
             fclose(fp);
             printf(".");
+            counter++;
+            if((counter + 1) == blocks) {
+                printf("\n");
+                return 1;
+            }
         } else if (resp->type == '3') {
             lifeTime--;
             if(lifeTime <= '0') {
@@ -85,8 +100,8 @@ void waitForRequisition(char *fileName) {
                 next_address.sin_port = htons(SERVER_PORT);
                 printf("Arquivo nao presente no servidor, IP do proximo: %s\n", inet_ntoa(next_address.sin_addr));
             }
-            break;
-        }
+            return 0;
+        } 
     }while(1);
 }
 
@@ -119,7 +134,9 @@ int searchFile() {
             msg_err_client_exit("Falha ao enviar.\n");
         } else {
             printf("Mensagem enviada.\n");
-            waitForRequisition(reqBlock->fileName);
+            if(waitForRequisition(reqBlock->fileName)){
+                addToCache("cache.txt", reqBlock->fileName);
+            }
             return 1;
         }
     }while(strcmp((char *)reqBlock, EXIT_STRING));

@@ -63,8 +63,7 @@ int main(int argc, char **argv){
         else if(strstr(command, "sair")){
             break;
         }
-        else{
-            printf("Comando invalido! digite outro.\n");
+        else{            
             system("cls");
             menu();
         }

@@ -16,16 +16,14 @@ typedef struct {
     short int padding;
 } PositiveAnswer;
 
-typedef struct
-{
+typedef struct {
     int clientIp;
     int serverIp;
     char type;
     int nextIp;
 } NegativeAnswer;
 
-typedef struct
-{
+typedef struct {
     int serverIp;
     int clientIp;
     char type;

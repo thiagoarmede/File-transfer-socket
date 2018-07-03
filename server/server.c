@@ -69,6 +69,7 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
         memcpy(negBuffer, negAnswer, sizeof(NegativeAnswer));
         send(socket, negBuffer, sizeof(PositiveAnswer), 0);
         fclose(file);
+        free(negAnswer);
         return 0;
     } else {
         PositiveAnswer *posAnswer = malloc(sizeof(PositiveAnswer));
@@ -141,7 +142,7 @@ int Search_in_File(char *fname, char *str){
 
 void server()
 {
-    printf("\n///////////////INICIANDO SERVIDOR/////////////\n");
+    printf("\n///////////////INICIANDO SERVIDOR///////////////\n");
     if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0)
         msg_err_exit("WSAStartup() failed\n");
 

@@ -71,7 +71,7 @@ void waitForRequisition(char *fileName) {
             printf(".");
         } else if (resp->type == '3') {
             lifeTime--;
-            if(lifeTime == '0') {
+            if(lifeTime <= '0') {
                 printf("\n-------- Tempo de vida excedido, fim da aplicacao. ------\n");
                 exit(1);
             }

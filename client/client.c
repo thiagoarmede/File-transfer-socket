@@ -94,7 +94,7 @@ int searchFile() {
         fflush(stdin);
 
         int foundHere = Search_in_File("cache.txt", reqBlock->fileName);
-        if(!foundHere) {
+        if(foundHere) {
             printf("Arquivo ja presente na STA. \n");
             return 0;
         }

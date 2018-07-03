@@ -60,7 +60,7 @@ int main(int argc, char **argv){
             fgets(nextIp, 24, stdin);
             addToNextIp(nextIp);
         }
-        else if(!strcmp(command, "sair")){
+        else if(strstr(command, "sair")){
             break;
         }
         else{

@@ -7,5 +7,6 @@
 void client();
 void searchFile();
 void MenuCliente();
+char *trimwhitespace(char *);
 
 #endif

@@ -10,9 +10,12 @@ int remote_server_socket = 0;
 int client_message_length = 0;
 
 unsigned short remote_port = 0;
+unsigned char lifeTime = '4';
 
 char remote_ip[32];
 struct sockaddr_in remote_address;
+
+struct sockaddr_in next_address;
 
 WSADATA wsa_data;
 
@@ -73,7 +76,8 @@ void waitForRequisition(char *fileName) {
             if(!negResp->nextIp) {
                 printf("Sem proximo IP registrado no servidor.\n");
             }else {
-                printf("Arquivo nao presente no servidor, IP do proximo: %i\n", negResp->nextIp);
+                next_address.sin_addr.S_un.S_addr = negResp->nextIp;
+                printf("Arquivo nao presente no servidor, IP do proximo: %s\n", inet_addr(inet_ntoa(remote_address.sin_addr)));
             }
             break;
         }

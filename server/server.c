@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <windows.h>
+#include "../client/client.h"
 
 int local_socket = 0;
 int remote_socket = 0;
@@ -34,19 +35,19 @@ int getNextIp(char *nextIp) {
     if(!fp) {
         return 0;
     }
-    fread(nextIp, sizeof(char), 20, fp);
+    fscanf(fp, "%s", nextIp);
     fclose(fp);
-    if(!strlen(nextIp)) {
+
+    if(strlen(nextIp)) {
         return 1;
     }
     return 0;
 }
 
 int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
-    printf("NOME RECEBIDO %s", fileRequisition->fileName);
-    FILE *file = fopen("b.exe", "rb+");
+    FILE *file = fopen(trimwhitespace(fileRequisition->fileName), "rb+");
     if(file == NULL) {
-        printf("Erro ao buscar arquivo, enviando mensagem negativa.\n");
+        printf("Enviando mensagem negativa.\n");
         if(fileRequisition->lifeTime == '0') {
             printf("Tempo de vida zerado, fim da requisição.");
             fclose(file);
@@ -60,9 +61,8 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
         negAnswer->serverIp = inet_addr(inet_ntoa(local_address.sin_addr));
         negAnswer->type = '3';
         if(getNextIp(nextIp)) {
-            negAnswer->nextIp = atoi(nextIp);
+            negAnswer->nextIp = inet_addr(nextIp);
         } else {
-            printf("converteu nao.\n");
             negAnswer->nextIp = 0;
         }
 
@@ -132,7 +132,7 @@ int Search_in_File(char *fname, char *str){
     fclose(fp);
 
     if (find_result == 0){
-        printf("\nArquivo não presente na STA.\n");
+        printf("\nArquivo nao presente na STA.\n");
         return 0;
     } else {
         return 1;
@@ -201,19 +201,15 @@ void server()
     
         hasFoundWord = Search_in_File("cache.txt", reqBlock->fileName);
 
-        if(hasFoundWord) {
-            if (!sendFile(reqBlock, remote_socket)){
-                printf("Arquivo nao enviado, informacoes passadas ao cliente.\n");
-                break;
-            } else {
-                printf("Arquivo enviado ao cliente!\n");
-                break;
-            }
-        }else {
+        if(!hasFoundWord) {
             printf("Arquivo não encontrado. \n");
+            sendFile(reqBlock, remote_socket);
             break;
-        }  
-    
+        } else {
+            sendFile(reqBlock, remote_socket);
+            printf("Arquivo enviado ao cliente!\n");
+            break;
+        }    
     }while(!strstr(reqBlock->fileName, EXIT_STRING)); 
  
     printf("Encerrando aplicacao\n");

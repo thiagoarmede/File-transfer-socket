@@ -104,7 +104,7 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
 
             send(socket, (char *)posAnswer, sizeof(PositiveAnswer), 0);
             remainingSize -= 1024;
-            Sleep(50);
+            Sleep(100);
         }
         fclose(file);
 

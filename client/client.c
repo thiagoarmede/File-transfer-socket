@@ -61,7 +61,6 @@ void waitForRequisition(char *fileName) {
 
         PositiveAnswer *resp = malloc(sizeof(PositiveAnswer));
         memcpy(resp, buffer, sizeof(PositiveAnswer));
-        printf("Tipo da resposta %c\n", resp->type);
         if(resp->type == '2') {
             FILE *fp = fopen(trimwhitespace(fileName), "ab+");
             if(!fp) {
@@ -71,13 +70,20 @@ void waitForRequisition(char *fileName) {
             fclose(fp);
             printf(".");
         } else if (resp->type == '3') {
+            lifeTime--;
+            if(lifeTime == '0') {
+                printf("\n-------- Tempo de vida excedido, fim da aplicacao. ------\n");
+                exit(1);
+            }
             NegativeAnswer *negResp = malloc(sizeof(NegativeAnswer));
             memcpy(negResp, resp, sizeof(NegativeAnswer));
             if(!negResp->nextIp) {
                 printf("Sem proximo IP registrado no servidor.\n");
             }else {
-                next_address.sin_addr.S_un.S_addr = negResp->nextIp;
-                printf("Arquivo nao presente no servidor, IP do proximo: %s\n", inet_addr(inet_ntoa(remote_address.sin_addr)));
+                next_address.sin_family = AF_INET;
+                next_address.sin_addr.s_addr = negResp->nextIp;
+                next_address.sin_port = htons(SERVER_PORT);
+                printf("Arquivo nao presente no servidor, IP do proximo: %s\n", inet_ntoa(next_address.sin_addr));
             }
             break;
         }
@@ -101,7 +107,7 @@ int searchFile() {
 
         reqBlock->serverIp = inet_addr(inet_ntoa(remote_address.sin_addr));
         reqBlock->clientIp = inet_addr(inet_ntoa(remote_address.sin_addr));
-        reqBlock->lifeTime = '4';
+        reqBlock->lifeTime = lifeTime;
         reqBlock->type = '1';
         unsigned char buffer[32];
         memcpy(buffer, reqBlock, sizeof(RequisitionBlock));
@@ -129,6 +135,9 @@ void client()
         printf("IP do servidor: ");
         scanf("%s", remote_ip);
         fflush(stdin);
+        if(strstr(remote_ip, "sair")){
+            break;
+        }
 
         remote_server_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (remote_server_socket == INVALID_SOCKET)    {

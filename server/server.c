@@ -117,9 +117,8 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
             posAnswer->type = '2';
             posAnswer->sequenceNumber = i;
 
-            send(socket, (char *)posAnswer, sizeof(PositiveAnswer), 0);
+            while (send(socket, (char *)posAnswer, sizeof(PositiveAnswer), 0) == SOCKET_ERROR);
             remainingSize -= 1024;
-            Sleep(100);
         }
         fclose(file);
 

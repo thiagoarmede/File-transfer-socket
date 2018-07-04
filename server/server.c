@@ -103,11 +103,11 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
             int readableSize;
 
             if(remainingSize >= 1024) {
-                posAnswer->padding = 1024 - remainingSize;
+                posAnswer->padding = 0;
                 readableSize = 1024;
             } else {
                 readableSize = remainingSize;
-                posAnswer->padding = 0;
+                posAnswer->padding = 1024-remainingSize;
             }
 
             printf("Enviando bloco... %i\n", i);

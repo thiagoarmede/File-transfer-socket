@@ -76,7 +76,7 @@ int waitForRequisition(char *fileName) {
                 }
             }
 
-            fwrite(resp->dataBlock, 1024 - resp->padding, 1, fp);
+            fwrite(resp->dataBlock, 1, 1024 - resp->padding, fp);
             fclose(fp);
             printf(".");
             counter++;

@@ -10,4 +10,9 @@ int sendFile(RequisitionBlock *, SOCKET);
 int Search_in_File(char *, char *);
 void addToCache(char *cache, char *s);
 
+//conversão
+int MyAtoi(char *s, int tam);
+int MyPow(int x, int y);
+void MyItoa(char *s, int v, int tam);
+
 #endif

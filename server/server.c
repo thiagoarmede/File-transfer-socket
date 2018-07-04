@@ -24,21 +24,48 @@ RequisitionBlock *reqBlock;
 
 #define REQUISITION_BUFFER_SIZE sizeof(RequisitionBlock);
 
-void msg_err_exit(char *msg) {
+void MyItoa(char *s, int v, int tam){
+    for (int i = 0, j = tam - 1; i < tam; i++, j--){
+        s[i] = v / MyPow(100, j);
+        v %= MyPow(100, j);
+    }
+}
+
+//TUDO BUGADO VOU USAR NAO
+int MyAtoi(char *s, int tam){
+    int r = 0;
+    for (int i = 0, j = tam - 1; i < tam; i++, j--)
+        r = r + s[i] * MyPow(100, j);
+    return r;
+}
+//POW BUGADONA VOU FAZER A MINHA
+int MyPow(int x, int y){
+    int r = x;
+    if (y == 0)
+        return 1;
+    for (int i = 1; i < y; i++)
+        r *= x;
+    return r;
+}
+
+msg_err_exit(char *msg){
     fprintf(stderr, msg);
     system("PAUSE");
     exit(EXIT_FAILURE);
 }
 
-int getNextIp(char *nextIp) {
+int getNextIp(char *nextIp)
+{
     FILE *fp = fopen("nextip.txt", "r");
-    if(!fp) {
+    if (!fp)
+    {
         return 0;
     }
     fscanf(fp, "%s", nextIp);
     fclose(fp);
 
-    if(strlen(nextIp)) {
+    if (strlen(nextIp))
+    {
         return 1;
     }
     return 0;
@@ -58,11 +85,14 @@ void addToCache(char *cache, char *s)
     fclose(f);
 }
 
-int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
+int sendFile(RequisitionBlock * fileRequisition, SOCKET socket)
+{
     FILE *file = fopen(trimwhitespace(fileRequisition->fileName), "rb+");
-    if(file == NULL) {
+    if (file == NULL)
+    {
         printf("Enviando mensagem negativa.\n");
-        if(fileRequisition->lifeTime == '0') {
+        if (fileRequisition->lifeTime == '0')
+        {
             printf("Tempo de vida zerado, fim da requisição.");
             fclose(file);
             return 0;
@@ -74,9 +104,12 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
         negAnswer->clientIp = inet_addr(inet_ntoa(remote_address.sin_addr));
         negAnswer->serverIp = inet_addr(inet_ntoa(local_address.sin_addr));
         negAnswer->type = '3';
-        if(getNextIp(nextIp)) {
+        if (getNextIp(nextIp))
+        {
             negAnswer->nextIp = inet_addr(nextIp);
-        } else {
+        }
+        else
+        {
             negAnswer->nextIp = 0;
         }
 
@@ -85,31 +118,38 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
         fclose(file);
         free(negAnswer);
         return 0;
-    } else {
+    }
+    else
+    {
         PositiveAnswer *posAnswer = malloc(sizeof(PositiveAnswer));
 
         fseek(file, 0, SEEK_END);
         int remainingSize = ftell(file);
         fseek(file, 0, SEEK_SET);
 
-        int blocks = remainingSize/1024;
-        if(remainingSize%1024) {
+        int blocks = remainingSize / 1024;
+        if (remainingSize % 1024)
+        {
             blocks++;
         }
 
         posAnswer->fileSize = remainingSize;
 
-        for(int i=0; i < blocks; i++) {
+        for (int i = 0; i < blocks; i++)
+        {
             int readableSize;
             char buffer[sizeof(PositiveAnswer)];
             memset(buffer, 0, sizeof(PositiveAnswer));
 
-            if(remainingSize >= 1024) {
+            if (remainingSize >= 1024)
+            {
                 posAnswer->padding = 0;
                 readableSize = 1024;
-            } else {
+            }
+            else
+            {
                 readableSize = remainingSize;
-                posAnswer->padding = 1024-remainingSize;
+                posAnswer->padding = 1024 - remainingSize;
             }
 
             printf("Enviando bloco... %i\n", i);
@@ -118,7 +158,7 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
             posAnswer->serverIp = inet_addr(inet_ntoa(local_address.sin_addr));
             posAnswer->type = '2';
             posAnswer->sequenceNumber = i;
-
+            memcpy(buffer, posAnswer, sizeof(PositiveAnswer));
             while (send(socket, buffer, sizeof(PositiveAnswer), 0) == SOCKET_ERROR);
             remainingSize -= 1024;
         }
@@ -128,18 +168,22 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
     }
 }
 
-int Search_in_File(char *fname, char *str){
+int Search_in_File(char *fname, char *str)
+{
     FILE *fp;
     int line_num = 1;
     int find_result = 0;
     char temp[512];
 
-    if((fp = fopen(fname, "r+")) == NULL) {
-    	return(-1);
+    if ((fp = fopen(fname, "r+")) == NULL)
+    {
+        return (-1);
     }
 
-    while (fgets(temp, 512, fp) != NULL) {
-        if ((strstr(temp, str)) != NULL) {
+    while (fgets(temp, 512, fp) != NULL)
+    {
+        if ((strstr(temp, str)) != NULL)
+        {
             printf("\n%s\n", temp);
             find_result++;
         }
@@ -147,10 +191,13 @@ int Search_in_File(char *fname, char *str){
     }
     fclose(fp);
 
-    if (find_result == 0){
+    if (find_result == 0)
+    {
         printf("\nArquivo nao presente na STA.\n");
         return 0;
-    } else {
+    }
+    else
+    {
         return 1;
     }
 }
@@ -162,7 +209,8 @@ void server()
         msg_err_exit("WSAStartup() failed\n");
 
     local_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (local_socket == INVALID_SOCKET){
+    if (local_socket == INVALID_SOCKET)
+    {
         WSACleanup();
         msg_err_exit("socket() failed\n");
     }
@@ -171,15 +219,17 @@ void server()
 
     local_address.sin_family = AF_INET;
     local_address.sin_port = htons(SERVER_PORT);
-    local_address.sin_addr.s_addr = htonl(INADDR_ANY); 
+    local_address.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    if (bind(local_socket, (struct sockaddr *) &local_address, sizeof(local_address)) == SOCKET_ERROR){
+    if (bind(local_socket, (struct sockaddr *)&local_address, sizeof(local_address)) == SOCKET_ERROR)
+    {
         WSACleanup();
         closesocket(local_socket);
         msg_err_exit("bind() failed\n");
     }
 
-    if (listen(local_socket, BACKLOG_MAX) == SOCKET_ERROR){
+    if (listen(local_socket, BACKLOG_MAX) == SOCKET_ERROR)
+    {
         WSACleanup();
         closesocket(local_socket);
         msg_err_exit("listen() failed\n");
@@ -188,9 +238,10 @@ void server()
     remote_length = sizeof(remote_address);
 
     printf("Aguardando alguma conexao...\n");
-    remote_socket = accept(local_socket, (struct sockaddr *) &remote_address, &remote_length);
+    remote_socket = accept(local_socket, (struct sockaddr *)&remote_address, &remote_length);
 
-    if(remote_socket == INVALID_SOCKET){
+    if (remote_socket == INVALID_SOCKET)
+    {
         WSACleanup();
         closesocket(local_socket);
         msg_err_exit("accept() failed\n");
@@ -198,42 +249,47 @@ void server()
 
     printf("Conexao estabelecida com %s\n", inet_ntoa(remote_address.sin_addr));
     printf("aguardando busca de arquivo...\n");
-    
-    do{ 
+
+    do
+    {
         unsigned char buffer[32];
         // recebe o ip do cliente
         message_length = recv(remote_socket, buffer, sizeof(RequisitionBlock), 0) == SOCKET_ERROR;
-        if(message_length){
+        if (message_length)
+        {
             printf("erro.. %i\n", WSAGetLastError());
         }
         reqBlock = malloc(sizeof(RequisitionBlock));
         memcpy(reqBlock, buffer, sizeof(RequisitionBlock));
-        
+
         printf("\n%s buscou: %s\n", inet_ntoa(remote_address.sin_addr), reqBlock->fileName);
         printf("consultando cache de arquivos...\n");
 
         int hasFoundWord;
         char *fileEntireText;
-    
+
         hasFoundWord = Search_in_File("cache.txt", reqBlock->fileName);
 
-        if(!hasFoundWord) {
+        if (!hasFoundWord)
+        {
             printf("Arquivo não encontrado. \n");
             sendFile(reqBlock, remote_socket);
             break;
-        } else {
+        }
+        else
+        {
             sendFile(reqBlock, remote_socket);
             printf("Arquivo enviado ao cliente!\n");
             break;
-        }    
-    }while(!strstr(reqBlock->fileName, EXIT_STRING)); 
- 
+        }
+    } while (!strstr(reqBlock->fileName, EXIT_STRING));
+
     printf("Encerrando aplicacao\n");
 
     WSACleanup();
     closesocket(local_socket);
     closesocket(remote_socket);
- 
+
     system("PAUSE");
     return;
 }

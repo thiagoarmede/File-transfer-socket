@@ -56,6 +56,7 @@ int waitForRequisition(char *fileName) {
     int blocks;
     int counter = 0;
     printf("Recebimento da resposta.\n");
+    FILE *fp = fopen(trimwhitespace(fileName), "ab+");
     do{
         memset(buffer, 0, sizeof(PositiveAnswer));
         int reqMessage = 0;
@@ -65,7 +66,6 @@ int waitForRequisition(char *fileName) {
         memcpy(resp, buffer, sizeof(PositiveAnswer));
 
         if(resp->type == '2') {
-            FILE *fp = fopen(trimwhitespace(fileName), "ab+");
             if(!fp) {
                 printf("Arquivo nao aberto...\n");
             }
@@ -77,10 +77,10 @@ int waitForRequisition(char *fileName) {
             }
 
             fwrite(resp->dataBlock, 1, 1024 - resp->padding, fp);
-            fclose(fp);
             //printf(".");
             counter++;
             if((counter) == blocks) {
+                fclose(fp);
                 printf("\n");
                 return 1;
             }

@@ -272,7 +272,7 @@ void server()
 
         if (!hasFoundWord)
         {
-            printf("Arquivo não encontrado. \n");
+            printf("Arquivo nao encontrado... \n");
             sendFile(reqBlock, remote_socket);
             break;
         }

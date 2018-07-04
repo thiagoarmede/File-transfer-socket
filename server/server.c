@@ -101,6 +101,8 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
 
         for(int i=0; i < blocks; i++) {
             int readableSize;
+            char buffer[sizeof(PositiveAnswer)];
+            memset(buffer, 0, sizeof(PositiveAnswer));
 
             if(remainingSize >= 1024) {
                 posAnswer->padding = 0;
@@ -117,11 +119,11 @@ int sendFile(RequisitionBlock *fileRequisition, SOCKET socket){
             posAnswer->type = '2';
             posAnswer->sequenceNumber = i;
 
-            while (send(socket, (char *)posAnswer, sizeof(PositiveAnswer), 0) == SOCKET_ERROR);
+            while (send(socket, buffer, sizeof(PositiveAnswer), 0) == SOCKET_ERROR);
             remainingSize -= 1024;
         }
-        fclose(file);
 
+        fclose(file);
         return 1;
     }
 }

@@ -63,7 +63,7 @@ int waitForRequisition(char *fileName) {
 
         PositiveAnswer *resp = malloc(sizeof(PositiveAnswer));
         memcpy(resp, buffer, sizeof(PositiveAnswer));
-        
+
         if(resp->type == '2') {
             FILE *fp = fopen(trimwhitespace(fileName), "ab+");
             if(!fp) {
@@ -78,9 +78,9 @@ int waitForRequisition(char *fileName) {
 
             fwrite(resp->dataBlock, 1, 1024 - resp->padding, fp);
             fclose(fp);
-            printf(".");
+            //printf(".");
             counter++;
-            if((counter + 1) == blocks) {
+            if((counter) == blocks) {
                 printf("\n");
                 return 1;
             }
@@ -101,7 +101,7 @@ int waitForRequisition(char *fileName) {
                 printf("Arquivo nao presente no servidor, IP do proximo: %s\n", inet_ntoa(next_address.sin_addr));
             }
             return 0;
-        } 
+        }
     }while(1);
 }
 
@@ -143,7 +143,7 @@ int searchFile() {
 }
 
 void client()
-{    
+{
     do {
 
         if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0)
@@ -174,7 +174,7 @@ void client()
         };
 
         searchFile();
-    
+
         WSACleanup();
         closesocket(remote_server_socket);
 

@@ -152,7 +152,7 @@ int sendFile(RequisitionBlock * fileRequisition, SOCKET socket)
                 posAnswer->padding = 1024 - remainingSize;
             }
 
-            printf("Enviando bloco... %i\n", i);
+            //printf("Enviando bloco... %i\n", i);
             fread(posAnswer->dataBlock, sizeof(char), readableSize, file);
             posAnswer->clientIp = inet_addr(inet_ntoa(remote_address.sin_addr));
             posAnswer->serverIp = inet_addr(inet_ntoa(local_address.sin_addr));

@@ -248,7 +248,7 @@ void server()
     }
 
     printf("Conexao estabelecida com %s\n", inet_ntoa(remote_address.sin_addr));
-    printf("aguardando busca de arquivo...\n");
+    printf("aguardando busca de arquivo..\n");
 
     do
     {

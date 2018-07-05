@@ -13,6 +13,6 @@ void addToCache(char *cache, char *s);
 //conversão
 int MyAtoi(char *s, int tam);
 int MyPow(int x, int y);
-void MyItoa(char *s, int v, int tam);
+void MyItoa(char *, int v, int tam);
 
 #endif

@@ -70,13 +70,14 @@ int waitForRequisition(char *fileName) {
                 printf("Arquivo nao aberto...\n");
             }
             if(counter == 0){
-                blocks = resp->fileSize/1024;
-                if(resp->fileSize%1024){
+                blocks = MyAtoi(resp->fileSize, 4)/1024;
+                if (MyAtoi(resp->fileSize, 4) % 1024)
+                {
                     blocks++;
                 }
             }
 
-            fwrite(resp->dataBlock, 1, 1024 - resp->padding, fp);
+            fwrite(resp->dataBlock, 1, 1024 - MyAtoi(resp->padding, 2), fp);
             //printf(".");
             counter++;
             if((counter) == blocks) {
@@ -120,8 +121,8 @@ int searchFile() {
             return 0;
         }
 
-        reqBlock->serverIp = inet_addr(inet_ntoa(remote_address.sin_addr));
-        reqBlock->clientIp = inet_addr(inet_ntoa(remote_address.sin_addr));
+        MyItoa(reqBlock->serverIp, inet_addr(inet_ntoa(remote_address.sin_addr)), 4);
+        MyItoa(reqBlock->clientIp, inet_addr(inet_ntoa(remote_address.sin_addr)), 4);
         reqBlock->lifeTime = lifeTime;
         reqBlock->type = '1';
         unsigned char buffer[32];

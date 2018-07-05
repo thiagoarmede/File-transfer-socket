@@ -24,7 +24,7 @@ RequisitionBlock *reqBlock;
 
 #define REQUISITION_BUFFER_SIZE sizeof(RequisitionBlock);
 
-void MyItoa(char *s, int v, int tam){
+char* MyItoa(char *s, int v, int tam){
     for (int i = 0, j = tam - 1; i < tam; i++, j--){
         s[i] = v / MyPow(100, j);
         v %= MyPow(100, j);
@@ -101,16 +101,16 @@ int sendFile(RequisitionBlock * fileRequisition, SOCKET socket)
         char nextIp[20];
         char negBuffer[sizeof(PositiveAnswer)];
 
-        negAnswer->clientIp = inet_addr(inet_ntoa(remote_address.sin_addr));
-        negAnswer->serverIp = inet_addr(inet_ntoa(local_address.sin_addr));
+        MyItoa(negAnswer->clientIp, inet_addr(inet_ntoa(remote_address.sin_addr)), 4);
+        MyItoa(negAnswer->serverIp, inet_addr(inet_ntoa(local_address.sin_addr)), 4);
         negAnswer->type = '3';
         if (getNextIp(nextIp))
         {
-            negAnswer->nextIp = inet_addr(nextIp);
+            MyItoa(negAnswer->nextIp, inet_addr(nextIp), 4);
         }
         else
         {
-            negAnswer->nextIp = 0;
+            MyItoa(negAnswer->nextIp, 0, 4);
         }
 
         memcpy(negBuffer, negAnswer, sizeof(NegativeAnswer));
@@ -133,7 +133,7 @@ int sendFile(RequisitionBlock * fileRequisition, SOCKET socket)
             blocks++;
         }
 
-        posAnswer->fileSize = remainingSize;
+        MyItoa(posAnswer->fileSize, remainingSize, 4);
 
         for (int i = 0; i < blocks; i++)
         {
@@ -143,21 +143,21 @@ int sendFile(RequisitionBlock * fileRequisition, SOCKET socket)
 
             if (remainingSize >= 1024)
             {
-                posAnswer->padding = 0;
+                MyItoa(posAnswer->padding, 0, 2);
                 readableSize = 1024;
             }
             else
             {
                 readableSize = remainingSize;
-                posAnswer->padding = 1024 - remainingSize;
+                MyItoa(posAnswer->padding, 1024 - remainingSize, 2);
             }
 
             //printf("Enviando bloco... %i\n", i);
             fread(posAnswer->dataBlock, sizeof(char), readableSize, file);
-            posAnswer->clientIp = inet_addr(inet_ntoa(remote_address.sin_addr));
-            posAnswer->serverIp = inet_addr(inet_ntoa(local_address.sin_addr));
+            MyItoa(posAnswer->clientIp, inet_addr(inet_ntoa(remote_address.sin_addr)), 4);
+            MyItoa(posAnswer->serverIp, inet_addr(inet_ntoa(local_address.sin_addr)), 4);
             posAnswer->type = '2';
-            posAnswer->sequenceNumber = i;
+            MyItoa(posAnswer->sequenceNumber, i, 2);
             memcpy(buffer, posAnswer, sizeof(PositiveAnswer));
             while (send(socket, buffer, sizeof(PositiveAnswer), 0) == SOCKET_ERROR);
             remainingSize -= 1024;

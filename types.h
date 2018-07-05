@@ -7,25 +7,25 @@
 #define BACKLOG_MAX 5
 
 typedef struct {
-    int clientIp;
-    int serverIp;
+    char clientIp[4];
+    char serverIp[4];
     char type;
-    short int sequenceNumber;
-    int fileSize;
+    char sequenceNumber[2];
+    char fileSize[4];
     char dataBlock[1024];
-    short int padding;
+    char padding[2];
 } PositiveAnswer;
 
 typedef struct {
-    int clientIp;
-    int serverIp;
+    char clientIp[4];
+    char serverIp[4];
     char type;
-    int nextIp;
+    char nextIp[4];
 } NegativeAnswer;
 
 typedef struct {
-    int serverIp;
-    int clientIp;
+    char serverIp[4];
+    char clientIp[4];
     char type;
     char lifeTime;
     char fileName[20];

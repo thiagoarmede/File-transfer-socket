@@ -56,8 +56,11 @@ int waitForRequisition(char *fileName) {
     int blocks;
     int counter = 0;
     printf("Recebimento da resposta.\n");
-    FILE *fp = fopen(trimwhitespace(fileName), "ab+");
+    FILE *fp;
     do{
+        if(counter == 0) {
+            fp = fopen(trimwhitespace(fileName), "wb+");
+        }
         memset(buffer, 0, sizeof(PositiveAnswer));
         int reqMessage = 0;
         while(recv(remote_server_socket, buffer, sizeof(PositiveAnswer), 0) == SOCKET_ERROR);
@@ -78,7 +81,6 @@ int waitForRequisition(char *fileName) {
             }
 
             fwrite(resp->dataBlock, 1, 1024 - MyAtoi(resp->padding, 2), fp);
-            //printf(".");
             counter++;
             if((counter) == blocks) {
                 fclose(fp);
@@ -115,7 +117,7 @@ int searchFile() {
         fgets(reqBlock->fileName, 19, stdin);
         fflush(stdin);
 
-        int foundHere = Search_in_File("cache.txt", reqBlock->fileName);
+        int foundHere = Search_in_File("cache.txt", trimwhitespace(reqBlock->fileName));
         if(foundHere) {
             printf("Arquivo ja presente na STA. \n");
             return 0;

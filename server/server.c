@@ -31,14 +31,13 @@ char* MyItoa(char *s, int v, int tam){
     }
 }
 
-//TUDO BUGADO VOU USAR NAO
 int MyAtoi(char *s, int tam){
     int r = 0;
     for (int i = 0, j = tam - 1; i < tam; i++, j--)
         r = r + s[i] * MyPow(100, j);
     return r;
 }
-//POW BUGADONA VOU FAZER A MINHA
+
 int MyPow(int x, int y){
     int r = x;
     if (y == 0)

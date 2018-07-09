@@ -68,7 +68,7 @@ int waitForRequisition(char *fileName) {
         PositiveAnswer *resp = malloc(sizeof(PositiveAnswer));
         memcpy(resp, buffer, sizeof(PositiveAnswer));
 
-        if(resp->type == '2') {
+        if(resp->type == 2) {
             if(!fp) {
                 printf("Arquivo nao aberto...\n");
             }
@@ -87,7 +87,7 @@ int waitForRequisition(char *fileName) {
                 printf("\n");
                 return 1;
             }
-        } else if (resp->type == '3') {
+        } else if (resp->type == 3) {
             lifeTime--;
             if(lifeTime <= '0') {
                 printf("\n-------- Tempo de vida excedido, fim da aplicacao. ------\n");
@@ -126,7 +126,7 @@ int searchFile() {
         MyItoa(reqBlock->serverIp, inet_addr(inet_ntoa(remote_address.sin_addr)), 4);
         MyItoa(reqBlock->clientIp, inet_addr(inet_ntoa(remote_address.sin_addr)), 4);
         reqBlock->lifeTime = lifeTime;
-        reqBlock->type = '1';
+        reqBlock->type = 1;
         unsigned char buffer[32];
         memcpy(buffer, reqBlock, sizeof(RequisitionBlock));
 

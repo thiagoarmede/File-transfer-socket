@@ -90,7 +90,7 @@ int sendFile(RequisitionBlock * fileRequisition, SOCKET socket)
     if (file == NULL)
     {
         printf("Enviando mensagem negativa.\n");
-        if (fileRequisition->lifeTime == '0')
+        if (fileRequisition->lifeTime == 0)
         {
             printf("Tempo de vida zerado, fim da requisição.");
             fclose(file);

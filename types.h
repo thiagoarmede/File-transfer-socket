@@ -5,6 +5,10 @@
 #define EXIT_STRING "#quit"
 #define SERVER_PORT 6000
 #define BACKLOG_MAX 5
+#define true 1
+#define false 0
+
+typedef short int bool;
 
 typedef struct {
     char clientIp[4];

@@ -10,7 +10,7 @@ int remote_server_socket = 0;
 int client_message_length = 0;
 
 unsigned short remote_port = 0;
-unsigned char lifeTime = '4';
+unsigned char lifeTime = 4;
 
 char remote_ip[32];
 struct sockaddr_in remote_address;
@@ -51,61 +51,90 @@ void msg_err_client_exit(char *msg)
     exit(EXIT_FAILURE);
 }
 
-int waitForRequisition(char *fileName) {
-    char buffer[sizeof(PositiveAnswer)];
-    int blocks;
-    int counter = 0;
-    printf("Recebimento da resposta.\n");
+bool waitForRequisition(char *fileName) {
+    char buffer[1041];
+    int blocks, proxIP = 0;
+    //printf("Recebimento da resposta.\n");
     FILE *fp;
-    do{
-        if(counter == 0) {
-            fp = fopen(trimwhitespace(fileName), "wb+");
+
+    memset(buffer, 0, sizeof(PositiveAnswer));
+
+    for(int i=0; recv(remote_server_socket, buffer, sizeof(PositiveAnswer), 0) == SOCKET_ERROR; i++){
+        printf("Erro ao receber primeiro bloco\ntentando novamente\n");
+        if(i == 5){
+            printf("Desistindo de receber bloco\nencerrando...\n");
+            return false;
         }
-        memset(buffer, 0, sizeof(PositiveAnswer));
-        int reqMessage = 0;
-        while(recv(remote_server_socket, buffer, sizeof(PositiveAnswer), 0) == SOCKET_ERROR);
+    }
 
-        PositiveAnswer *resp = malloc(sizeof(PositiveAnswer));
-        memcpy(resp, buffer, sizeof(PositiveAnswer));
+    PositiveAnswer *resp = malloc(sizeof(PositiveAnswer));
+    memcpy(resp, buffer, sizeof(PositiveAnswer));
 
-        if(resp->type == 2) {
-            if(!fp) {
-                printf("Arquivo nao aberto...\n");
-            }
-            if(counter == 0){
-                blocks = MyAtoi(resp->fileSize, 4)/1024;
-                if (MyAtoi(resp->fileSize, 4) % 1024)
-                {
-                    blocks++;
-                }
-            }
-
-            fwrite(resp->dataBlock, 1, 1024 - MyAtoi(resp->padding, 2), fp);
-            counter++;
-            if((counter) == blocks) {
-                fclose(fp);
-                printf("\n");
-                return 1;
-            }
-        } else if (resp->type == 3) {
-            lifeTime--;
-            if(lifeTime <= '0') {
-                printf("\n-------- Tempo de vida excedido, fim da aplicacao. ------\n");
-                exit(1);
-            }
-            NegativeAnswer *negResp = malloc(sizeof(NegativeAnswer));
-            memcpy(negResp, resp, sizeof(NegativeAnswer));
-            if(!negResp->nextIp) {
-                printf("Sem proximo IP registrado no servidor.\n");
-            }else {
-                next_address.sin_family = AF_INET;
-                next_address.sin_addr.s_addr = negResp->nextIp;
-                next_address.sin_port = htons(SERVER_PORT);
-                printf("Arquivo nao presente no servidor, IP do proximo: %s\n", inet_ntoa(next_address.sin_addr));
-            }
+    if(resp->type == 2) {
+        fp = fopen(trimwhitespace(fileName), "wb+");
+        if(!fp) {
+            printf("Erro ao abrir o arquivo...\n");
             return 0;
         }
-    }while(1);
+        blocks = MyAtoi(resp->fileSize, 4)/1024;
+        if (MyAtoi(resp->fileSize, 4) % 1024) blocks++;
+        for(int i=0; i< blocks; i++){
+            fwrite(resp->dataBlock, 1, 1024 - MyAtoi(resp->padding, 2), fp);
+            while(recv(remote_server_socket, buffer, sizeof(PositiveAnswer), 0) == SOCKET_ERROR);
+            memcpy(resp, buffer, sizeof(PositiveAnswer));
+        }
+        fclose(fp);
+        return true;
+    }
+    else if (resp->type == 3){
+        lifeTime--;
+        if(lifeTime <= 0) {
+            printf("\n-------- Tempo de vida excedido, fim da busca. ------\n");
+            return false;
+        }
+        RequisitionBlock *reqBlock = malloc(sizeof(RequisitionBlock));
+        memset(reqBlock, 0, sizeof(*reqBlock));
+        //NegativeAnswer *negResp = malloc(sizeof(NegativeAnswer));
+        //memcpy(negResp, resp, sizeof(NegativeAnswer));
+        MyItoa(reqBlock->clientIp, MyAtoi(buffer, 4), 4);
+        MyItoa(reqBlock->serverIp, MyAtoi(buffer+4, 4), 4);
+        reqBlock->type = 1;
+        reqBlock->lifeTime = lifeTime;
+        strcpy(reqBlock->fileName, fileName);
+        proxIP = MyAtoi(buffer+9, 4);
+        if(!proxIP){
+            printf("Sem proximo IP registrado no servidor.\n");
+            return false;
+        }else {
+            closesocket(remote_server_socket);
+            remote_server_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+                if (remote_server_socket == INVALID_SOCKET)    {
+                WSACleanup();
+                msg_err_client_exit("Falha ao comunicar com socket\n");
+            }
+            next_address.sin_family = AF_INET;
+            next_address.sin_addr.s_addr = proxIP;
+            next_address.sin_port = htons(SERVER_PORT);
+            printf("Arquivo nao presente no servidor, IP do proximo: %s\n", inet_ntoa(next_address.sin_addr));
+            printf("conectando ao servidor %s...\n", inet_ntoa(next_address.sin_addr));
+            while(connect(remote_server_socket, (struct sockaddr *) &remote_address, sizeof(remote_address)) == SOCKET_ERROR) {
+                WSACleanup();
+                //msg_err_client_exit("Falha ao conectar com o servidor, tentando novamente...\n");
+                 //printf("Falha ao conectar com o servidor, tentando novamente...\n");
+                 printf("Falha ao conectar com o servidor");
+                 return false;
+            };
+            memcpy(buffer, reqBlock, sizeof(RequisitionBlock));
+            while(send(remote_server_socket, buffer, sizeof(RequisitionBlock), 0) == SOCKET_ERROR){
+                //WSACleanup();
+                //closesocket(remote_server_socket);
+                //msg_err_client_exit("Falha ao enviar.\n");
+                printf("Falha ao enviar. tentando novamente\n");
+            }
+            return waitForRequisition(reqBlock->fileName);
+        }
+    }
+    return false;
 }
 
 int searchFile() {
@@ -136,7 +165,7 @@ int searchFile() {
             closesocket(remote_server_socket);
             msg_err_client_exit("Falha ao enviar.\n");
         } else {
-            printf("Mensagem enviada.\n");
+            //printf("Mensagem enviada.\n");
             if(waitForRequisition(reqBlock->fileName)){
                 addToCache("cache.txt", reqBlock->fileName);
             }

@@ -78,10 +78,12 @@ bool waitForRequisition(char *fileName) {
         }
         blocks = MyAtoi(resp->fileSize, 4)/1024;
         if (MyAtoi(resp->fileSize, 4) % 1024) blocks++;
-        for(int i=0; i< blocks; i++){
-            fwrite(resp->dataBlock, 1, 1024 - MyAtoi(resp->padding, 2), fp);
+        fwrite(resp->dataBlock, 1, 1024 - MyAtoi(resp->padding, 2), fp);
+        for(int i=1; i< blocks; i++){
+
             while(recv(remote_server_socket, buffer, sizeof(PositiveAnswer), 0) == SOCKET_ERROR);
             memcpy(resp, buffer, sizeof(PositiveAnswer));
+            fwrite(resp->dataBlock, 1, 1024 - MyAtoi(resp->padding, 2), fp);
         }
         fclose(fp);
         return true;
